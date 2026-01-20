@@ -71,6 +71,7 @@
 export interface Category {
   id: number;
   name: string;
+  items: MenuItem[];
 }
 
 export interface MenuItem {
@@ -81,7 +82,9 @@ export interface MenuItem {
   price: string;
   discount_price?: string | null;
   category_id: number;
-  category_name: string | ""
+  category_name: string | "";
+  preparation_time: string | "";
+
 }
 
 export interface Restaurant {

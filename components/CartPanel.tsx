@@ -35,7 +35,7 @@ export default function CartPanel({ orderType: initialOrderType, tableToken }: C
     note: ''
   })
   const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof CustomerInfo, string>>>({})
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://le-luxury-house.localhost:8000/api/customer';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://le-luxury-house.localhost:8000/api/customer';
 
   const items = useMemo(() => {
     if (!cartContext) return []
