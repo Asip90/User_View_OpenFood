@@ -3,7 +3,7 @@
 
 
 @theme {
-  --color-primary: yellow;
+  --color-primary: #16a34a; /* Valeur par défaut */
   --color-secondary: #1e3e1e; /* Valeur par défaut */
 };
 /* @tailwind base;
