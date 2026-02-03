@@ -48,8 +48,7 @@ export default function CartPanel({ orderType: initialOrderType, tableToken }: C
 
   const subtotal = useMemo(() => 
     items.reduce((acc, item) => acc + item.price * item.quantity, 0)
-  , [items])
-  {console.log('gosflsfjvmqbdfj',items)}
+  , [items]) // {console.log('gosflsfjvmqbdfj',items)
   const deliveryFee = useMemo(() => 
     selectedOrderType === 'delivery' ? 1500 : 0
   , [selectedOrderType])
