@@ -14,7 +14,7 @@ interface HeroProps {
 }
 
 export default function Hero({ restaurant, table, customization }: HeroProps) {
-  console.log("Customization dans Header:", customization);
+  // console.log("Customization dans Header:", customization);
   return (
     <section className="relative w-full h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden bg-stone-900">
       
