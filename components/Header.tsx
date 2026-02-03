@@ -55,7 +55,7 @@ export default function Hero({ restaurant, table, customization }: HeroProps) {
         {/* Badge de Table - Discret et Luxueux */}
         <div className="mb-4 px-4 py-1.5 rounded-full border border-white/30 backdrop-blur-md">
           <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-white/90">
-            Table d&apos;exception n°{table.number}
+            Table  n°{table.number}
           </span>
         </div>
 

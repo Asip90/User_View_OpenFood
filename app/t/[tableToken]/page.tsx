@@ -502,6 +502,8 @@ export default function MenuPage() {
 }
 
 function CompactMenuItemCard({ item }: { item: MenuItem }) {
+  const [showModal, setShowModal] = useState(false)
+  // console.log("Rendering item:", item);
   const cartContext = useContext(CartContext);
   if (!cartContext) return null;
   const { cart, addItem, removeItem } = cartContext;
@@ -533,11 +535,10 @@ function CompactMenuItemCard({ item }: { item: MenuItem }) {
       <div className="flex p-3 gap-4 h-full">
         {/* COLONNE GAUCHE : Image */}
         <div className="flex-shrink-0 w-28 h-28 rounded-lg overflow-hidden relative">
-          <img
-            src={item.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80"}
-            alt={item.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
+          <div className="flex-shrink-0 w-28 h-28 rounded-lg overflow-hidden relative cursor-pointer" onClick={() => setShowModal(true)}
+          >
+            <img src={item.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80"} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          </div>
         </div>
 
         {/* COLONNE DROITE : Contenu */}
@@ -614,62 +615,101 @@ function CompactMenuItemCard({ item }: { item: MenuItem }) {
           </div>
         </div>
       </div>
+       {/* Modale */}
+      {showModal && <MenuItemModal item={item} onClose={() => setShowModal(false)}  />}
     </div>
   );
 }
 
+function MenuItemModal({ item, onClose }: { item: MenuItem; onClose: () => void }) {
+  // const [showModal, setShowModal] = useState(false)
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6 relative">
+        {/* Bouton fermer */}
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-stone-500 hover:text-stone-800"
+        >
+          <div className="bg-black rounded-full"><X size={20} color="white"/></div>
+        </button>
+
+        {/* Image */}
+        <div className="w-full h-48 rounded-lg overflow-hidden mb-4">
+          <img 
+            src={item.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80"} 
+            alt={item.name} 
+            className="w-full h-full object-cover" 
+          />
+        </div>
+
+        {/* Infos */}
+        <h2 className="text-xl font-bold text-stone-900 mb-2">{item.name}</h2>
+        <p className="text-stone-600 mb-4">{item.description || "Ingrédients frais et préparation maison."}</p>
+
+        <div className="flex justify-between items-center mb-4">
+          <span className="text-lg font-bold text-primary">{item.price} F</span>
+          <span className="flex items-center text-stone-400 text-sm">
+            <Clock className="w-4 h-4 mr-1" />
+            {item.preparation_time || "10-15 min"}
+          </span>
+        </div>
+
+        {/* Badge populaire */}
+        {'is_popular' in item && (item as MenuItem & { is_popular?: boolean }).is_popular && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-50 text-yellow-700 text-xs rounded-full mb-4">
+            <Star className="w-3 h-3 fill-yellow-500" />
+            Populaire
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+
+
 function LoadingScreen() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-stone-50 via-white to-primary/5">
-      <div className="relative">
-        <div className="w-32 h-32 rounded-full bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10">
-          <div className="absolute inset-8 rounded-full bg-gradient-to-r from-primary/20 to-primary/10 animate-spin-slow"></div>
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center">
-            <UtensilsCrossed className="w-8 h-8 text-primary animate-pulse" />
-          </div>
-        </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+      {/* Loader minimaliste */}
+      <div className="relative w-20 h-20 flex items-center justify-center">
+        <div className="absolute w-full h-full rounded-full border-2 border-stone-200 animate-spin" />
+        <UtensilsCrossed className="w-8 h-8 text-primary animate-pulse" />
       </div>
-      <p className="mt-8 text-lg font-semibold text-stone-700">
+
+      {/* Texte */}
+      <p className="mt-6 text-sm font-medium text-stone-600">
         Chargement du menu...
       </p>
-      <style jsx>{`
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin-slow {
-          animation: spin-slow 3s linear infinite;
-        }
-      `}</style>
     </div>
   )
 }
 
 function NotFoundScreen() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-stone-50 via-white to-primary/5 p-6">
-      <div className="max-w-md text-center space-y-6">
-        <div className="relative w-24 h-24 mx-auto">
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/10 to-primary/5 animate-pulse"></div>
-          <div className="absolute inset-6 rounded-full bg-white shadow-lg flex items-center justify-center">
-            <UtensilsCrossed className="w-10 h-10 text-stone-300" />
-          </div>
-        </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6">
+      <div className="max-w-sm text-center space-y-6">
         
-        <div className="space-y-3">
-          <h2 className="text-2xl font-bold text-stone-800">
+        {/* Icône dans un container glassmorphism */}
+        <div className="w-20 h-20 mx-auto rounded-xl bg-white/70 backdrop-blur-md border border-stone-200 flex items-center justify-center">
+          <UtensilsCrossed className="w-10 h-10 text-stone-400" />
+        </div>
+
+        {/* Texte */}
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold text-stone-900">
             Menu inaccessible
           </h2>
-          <p className="text-stone-500">
-            Nous {'n\''}avons pas pu charger le menu. Veuillez vérifier votre connexion ou contacter le serveur.
+          <p className="text-sm text-stone-500 leading-relaxed">
+            Impossible de charger le menu. Vérifiez votre connexion ou contactez le serveur.
           </p>
         </div>
-        
+
+        {/* Bouton moderne */}
         <button 
           onClick={() => window.location.reload()}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-white font-semibold hover:shadow-lg transition-all duration-300"
+          className="px-5 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
         >
           Réessayer
         </button>

@@ -20,6 +20,7 @@ type AddItemInput = {
   id: number;
   name: string;
   price: string | number;
+  image?: string | null;
   discount_price?: string | number | null;
 };
 
@@ -50,6 +51,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         [item.id]: {
           id: item.id,
           name: item.name,
+          image: item.image,
           price: Number(item.discount_price ?? item.price),
           quantity: existing ? existing.quantity + 1 : 1,
         },

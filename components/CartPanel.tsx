@@ -35,7 +35,7 @@ export default function CartPanel({ orderType: initialOrderType, tableToken }: C
     note: ''
   })
   const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof CustomerInfo, string>>>({})
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://le-luxury-house.localhost:8000/api/customer';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://le-luxury-house.localhost:8000/api/customer';
 
   const items = useMemo(() => {
     if (!cartContext) return []
@@ -49,7 +49,7 @@ export default function CartPanel({ orderType: initialOrderType, tableToken }: C
   const subtotal = useMemo(() => 
     items.reduce((acc, item) => acc + item.price * item.quantity, 0)
   , [items])
-
+  {console.log('gosflsfjvmqbdfj',items)}
   const deliveryFee = useMemo(() => 
     selectedOrderType === 'delivery' ? 1500 : 0
   , [selectedOrderType])
@@ -228,6 +228,7 @@ export default function CartPanel({ orderType: initialOrderType, tableToken }: C
                       className="flex gap-4 p-4 bg-white rounded-xl border border-gray-200 hover:border-[var(--color-primary)] transition-colors"
                     >
                       {/* Image */}
+                      
                       <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                         <img 
                           src={item.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=200&q=80"} 
