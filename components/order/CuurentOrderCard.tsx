@@ -23,6 +23,7 @@ export default function CurrentOrderCard({
   /* ================= FETCH ORDER ================= */
 
   useEffect(() => {
+    print(lastOrderToken)
     if (!lastOrderToken) return;
 
     let active = true;

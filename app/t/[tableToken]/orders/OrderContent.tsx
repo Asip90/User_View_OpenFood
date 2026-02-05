@@ -68,13 +68,13 @@ export interface OrderStatus extends Order {
   items?: OrderItemDetail[];
 }
 
-type OrderStatusType = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered';
+type OrderStatusType = 'pending' | 'confirmed' | 'preparing' | 'ready' ;
 
 /* ================= CONFIG ================= */
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL 
 
 
-const REFRESH_INTERVAL = 30_000;
+const REFRESH_INTERVAL = 300_000;
 const RECENT_ORDERS_THRESHOLD = 12 * 60 * 60 * 1000; // 12 heures en millisecondes
 
 /* ================= ORDER STATUS COMPONENTS ================= */
@@ -89,7 +89,8 @@ const STATUS_CONFIG: Record<OrderStatusType, {
   confirmed: { label: 'Confirmée', icon: CheckCircle, color: 'text-blue-600', bg: 'bg-blue-50' },
   preparing: { label: 'En préparation', icon: ChefHat, color: 'text-orange-600', bg: 'bg-orange-50' },
   ready: { label: 'Prête', icon: Package, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-  delivered: { label: 'Servie', icon: Truck, color: 'text-purple-600', bg: 'bg-purple-50' },
+  // delivered: { label: 'Servie', icon: Truck, color: 'text-purple-600', bg: 'bg-purple-50' },
+  // cancelled: { label: 'Annulée', icon: X, color: 'text-red-600', bg: 'bg-red-50' },
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -108,7 +109,17 @@ function StatusBadge({ status }: { status: string }) {
 export  function OrderProgress({ status }: { status: string }) {
   const steps = useMemo(() => Object.keys(STATUS_CONFIG) as OrderStatusType[], []);
   const currentIndex = useMemo(() => steps.indexOf(status.toLowerCase() as OrderStatusType), [status, steps]);
-  
+  if (status.toLowerCase() === 'cancelled') {
+  return (
+    <div className="p-4 bg-red-50 rounded-xl flex items-center gap-3">
+      <X className="text-red-600" size={20} />
+      <span className="text-sm font-medium text-red-700">
+        Cette commande a été annulée
+      </span>
+    </div>
+  );
+}
+
   return (
     <div className="mb-6">
       <div className="flex justify-between mb-3">
