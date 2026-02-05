@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ShoppingBag, Utensils, Eye, Loader2, AlertCircle } from "lucide-react";
 import { OrderStatus, OrderProgress } from "../../app/t/[tableToken]/orders/OrderContent";
 
-const API_BASE = "http://le-luxury-house.localhost:8000/api/customer";
+const API_BASE =process.env.NEXT_PUBLIC_API_BASE_URL
 
 interface CurrentOrderCardProps {
   lastOrderToken: string;

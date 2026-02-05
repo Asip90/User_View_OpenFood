@@ -72,7 +72,7 @@ type OrderStatusType = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delive
 
 /* ================= CONFIG ================= */
 
-const API_BASE = 'http://le-luxury-house.localhost:8000/api/customer';
+const API_BASE = process.env.API_BASE_URL;
 const REFRESH_INTERVAL = 30_000;
 const RECENT_ORDERS_THRESHOLD = 12 * 60 * 60 * 1000; // 12 heures en millisecondes
 
