@@ -71,8 +71,9 @@ export interface OrderStatus extends Order {
 type OrderStatusType = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered';
 
 /* ================= CONFIG ================= */
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL 
 
-const API_BASE = process.env.API_BASE_URL;
+
 const REFRESH_INTERVAL = 30_000;
 const RECENT_ORDERS_THRESHOLD = 12 * 60 * 60 * 1000; // 12 heures en millisecondes
 
