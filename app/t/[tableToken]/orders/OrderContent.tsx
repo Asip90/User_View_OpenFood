@@ -523,22 +523,15 @@ export default function OrdersContent() {
   }, []);
 
   // Fetch status for all recent orders
- useEffect(() => {
-  if (recentOrders.length === 0) return;
+  useEffect(() => {
+    if (!table || recentOrders.length === 0) return;
 
-  const interval = setInterval(() => {
     recentOrders.forEach(order => {
-      const status = orderStatuses.get(order.order_id);
-      if (!status) return;
-
-      if (!['ready', 'delivered'].includes(status.status)) {
+      if (!orderStatuses.has(order.order_id)) {
         fetchRecentOrderStatus(order.order_id, order.order_token);
       }
     });
-  }, REFRESH_INTERVAL);
-
-  return () => clearInterval(interval);
-}, [recentOrders, orderStatuses, fetchRecentOrderStatus]);
+  }, [recentOrders, table, fetchRecentOrderStatus, orderStatuses]);
 
   /* ================= FETCH ORDER HISTORY ================= */
 
@@ -598,18 +591,29 @@ export default function OrdersContent() {
 
   /* ================= PHONE HANDLING ================= */
 
-  const handlePhoneChange = (value: string) => {
-    const numericValue = value.replace(/\D/g, '');
-    setPhone(numericValue.slice(0, 15));
-  };
+  // const handlePhoneChange = (value: string) => {
+  //   const numericValue = value.replace(/\D/g, '');
+  //   setPhone(numericValue.slice(0, 15));
+  // };
 
-  const formatPhoneDisplay = (value: string) => {
-    const numeric = value.replace(/\D/g, '');
-    if (numeric.length <= 2) return numeric;
-    if (numeric.length <= 4) return `${numeric.slice(0, 2)} ${numeric.slice(2)}`;
-    if (numeric.length <= 7) return `${numeric.slice(0, 2)} ${numeric.slice(2, 4)} ${numeric.slice(4)}`;
-    return `${numeric.slice(0, 2)} ${numeric.slice(2, 5)} ${numeric.slice(5, 8)}`;
-  };
+  // const formatPhoneDisplay = (value: string) => {
+  //   const numeric = value.replace(/\D/g, '');
+  //   if (numeric.length <= 2) return numeric;
+  //   if (numeric.length <= 4) return `${numeric.slice(0, 2)} ${numeric.slice(2)}`;
+  //   if (numeric.length <= 7) return `${numeric.slice(0, 2)} ${numeric.slice(2, 4)} ${numeric.slice(4)}`;
+  //   return `${numeric.slice(0, 2)} ${numeric.slice(2, 5)} ${numeric.slice(5, 8)}`;
+  // };
+const handlePhoneChange = (value: string) => {
+  const numericValue = value.replace(/\D/g, '');
+  // Accepter jusqu'à 20 chiffres (ou plus si tu veux)
+  setPhone(numericValue.slice(0, 20));
+};
+
+const formatPhoneDisplay = (value: string) => {
+  const numeric = value.replace(/\D/g, '');
+  // Découper en blocs de 2 ou 3 chiffres pour lisibilité
+  return numeric.match(/.{1,2}/g)?.join(' ') || '';
+};
 
   /* ================= RENDER ================= */
 
@@ -732,7 +736,7 @@ export default function OrdersContent() {
                 <h2 className="text-lg font-semibold text-gray-900 mb-1">Achats récents</h2>
                 <p className="text-sm text-gray-600">Commandes des dernières 12 heures</p>
               </div>
-              {/* <button
+              <button
                 onClick={() => {
                   cleanupExpiredOrders();
                   const cachedOrders = getRecentOrdersFromCache(table.token);
@@ -743,11 +747,12 @@ export default function OrdersContent() {
               >
                 <RefreshCw size={16} className={refreshing.length > 0 ? 'animate-spin' : ''} />
                 Actualiser
-              </button> */}
+              </button>
             </div>
             
             {recentOrders.length > 0 ? (
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+ 
                 {recentOrders.map((cachedOrder) => {
                   const orderStatus = orderStatuses.get(cachedOrder.order_id);
                   const isRefreshing = refreshing.includes(cachedOrder.order_id);
@@ -908,7 +913,7 @@ export default function OrdersContent() {
                   </button>
                 </div>
                 
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {history.map((order) => (
                     <OrderCard 
                       key={order.id} 

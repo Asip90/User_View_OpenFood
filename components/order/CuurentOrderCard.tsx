@@ -4,8 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ShoppingBag, Utensils, Eye, Loader2, AlertCircle } from "lucide-react";
 import { OrderStatus, OrderProgress } from "../../app/t/[tableToken]/orders/OrderContent";
 
-const API_BASE = process.env.API_BASE_URL;
-
+const API_BASE = "http://le-luxury-house.localhost:8000/api/customer";
 
 interface CurrentOrderCardProps {
   lastOrderToken: string;
@@ -137,12 +136,12 @@ export default function CurrentOrderCard({
               </div>
             </div>
 
-            <div className="text-xs text-gray-400">
+            {/* <div className="text-xs text-gray-400">
               Token :{" "}
               <span className="font-mono">
                 {lastOrderToken.slice(0, 8)}…
               </span>
-            </div>
+            </div> */}
           </div>
 
           <div className="text-right">
