@@ -3,7 +3,7 @@
 import { useContext, useState, useCallback, useMemo, useEffect } from "react"
 import { CartContext, CartItem } from "@/lib/cart-context"
 import { ShoppingBag, X, Plus, Minus, CreditCard, ChevronRight, UtensilsCrossed, Truck, PackageCheck, MessageSquare, Shield, Clock, CheckCircle } from "lucide-react"
-
+import { Order } from "@/lib/types"
 interface CartPanelProps {
   orderType: 'dine_in' | 'takeaway' | 'delivery'
   tableToken: string 
@@ -17,6 +17,48 @@ interface CustomerInfo {
 }
 
 type OrderType = 'dine_in' | 'takeaway' | 'delivery'
+
+// Dans un fichier utils.ts
+export const localStorageUtils = {
+  getOrders: () => {
+    try {
+      const data = localStorage.getItem("orders")
+      if (!data) return []
+      
+      // Essayer de parser comme tableau
+      const parsed = JSON.parse(data)
+      // Si parsed est un tableau, le retourner
+      if (Array.isArray(parsed)) return parsed
+      
+      // Si parsed est une chaîne (double encodage), parser à nouveau
+      if (typeof parsed === 'string') {
+        const reParsed = JSON.parse(parsed)
+        return Array.isArray(reParsed) ? reParsed : []
+      }
+      
+      return []
+    } catch (error) {
+      console.error("Erreur de parsing localStorage:", error)
+      return []
+    }
+  },
+  
+  saveOrder: (payload: Order) => {
+    try {
+      const orders = localStorageUtils.getOrders()
+      orders.push(payload)
+      
+      // Sauvegarder une seule fois (pas de double JSON.stringify)
+      localStorage.setItem("orders", JSON.stringify(orders))
+    } catch (error) {
+      console.error("Erreur de sauvegarde localStorage:", error)
+    }
+  },
+  
+  clearCorruptedOrders: () => {
+    localStorage.removeItem("orders")
+  }
+}
 
 export default function CartPanel({ orderType: initialOrderType, tableToken }: CartPanelProps) {
   const cartContext = useContext(CartContext)
@@ -34,9 +76,45 @@ export default function CartPanel({ orderType: initialOrderType, tableToken }: C
     email: '',
     note: ''
   })
-  const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof CustomerInfo, string>>>({})
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://le-luxury-house.localhost:8000/api/customer';
 
+// Dans votre composant principal (App.tsx ou index.tsx)
+useEffect(() => {
+  const fixCorruptedLocalStorage = () => {
+    try {
+      const ordersData = localStorage.getItem("orders")
+      if (!ordersData) return
+      
+      // Essayer de parser
+      let orders = JSON.parse(ordersData)
+      
+      // Si orders est une chaîne, c'est un double encodage
+      if (typeof orders === 'string') {
+        console.warn("Données corrompues détectées, réparation...")
+        try {
+          orders = JSON.parse(orders) // Parser à nouveau
+          if (Array.isArray(orders)) {
+            // Réparer en sauvegardant correctement
+            localStorage.setItem("orders", JSON.stringify(orders))
+            console.log("Données réparées avec succès")
+          } else {
+            localStorage.removeItem("orders")
+          }
+        } catch (e) {
+          localStorage.removeItem("orders")
+        }
+      }
+    } catch (error) {
+      console.error("Erreur lors de la vérification du localStorage:", error)
+    }
+  }
+  
+  fixCorruptedLocalStorage()
+}, [])
+
+
+  const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof CustomerInfo, string>>>({})
+  const API_BASE_URL =  'http://localhost:8000/api/customer';
+  // process.env.NEXT_PUBLIC_API_BASE_URL ||
   const items = useMemo(() => {
     if (!cartContext) return []
     return Object.values(cartContext.cart)
@@ -85,54 +163,112 @@ export default function CartPanel({ orderType: initialOrderType, tableToken }: C
     return Object.keys(errors).length === 0
   }
 
-  const handleSubmitOrder = async () => {
-    if (!validateForm()) return
-    setLoading(true)
-    setMessage(null)
-
-    try {
-      const payload = {
-        order_type: selectedOrderType,
-        customer_name: customerInfo.name,
-        customer_phone: customerInfo.phone,
-        customer_email: customerInfo.email || '',
-        note: customerInfo.note || '',
-        table_token: tableToken,
-        items: items.map((i: CartItem) => ({
-          menu_item_id: i.id,
-          quantity: i.quantity
-        }))
-      }
-
-      const res = await fetch(`${API_BASE_URL}/create-order/${tableToken}/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-
-      const data = await res.json()
-
-      if (res.ok) {
-        setMessage({ type: 'success', text: `Commande #${data.order_number} confirmée !` })
-        setShowSuccessAnimation(true)
-        
-        setTimeout(() => {
-          clearCart()
-          setShowCheckoutModal(false)
-          setIsCartOpen(false)
-          setCustomerInfo({ name: '', phone: '', email: '', note: '' })
-          setMessage(null)
-        }, 2500)
-      } else {
-        setMessage({ type: 'error', text: data.detail || "Erreur lors de l'envoi." })
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: "Erreur réseau." })
-    } finally {
-      setLoading(false)
-    }
+const saveCurrentOrder = (data : Order) => {
+  // console.log(payload)
+  const payload = {
+    order_id: data.order_id,
+    order_token: data.order_token,
+    order_number: data.order_number,
+    total: data.total,
+    table_token: tableToken,
+    created_at: Date.now(),
+    expires_at: Date.now() + 12 * 60 * 60 * 1000 // 12h
   }
+ console.log(payload)
+  // Récupérer l'existant
+  const existing = localStorage.getItem("orders")
+  const orders = existing ? JSON.parse(existing) : []
 
+  // Ajouter la nouvelle commande
+  orders.push(payload)
+
+  // Sauvegarder le tableau complet
+  localStorage.setItem("orders", JSON.stringify(orders))
+
+  // console.log("cache mis à jour", orders)
+}
+
+
+  const handleSubmitOrder = async () => {
+  if (!validateForm()) return
+  setLoading(true)
+  setMessage(null)
+
+  try {
+    const payload = {
+      order_type: selectedOrderType,
+      customer_name: customerInfo.name,
+      customer_phone: customerInfo.phone,
+      customer_email: customerInfo.email || '',
+      notes: customerInfo.note || '',
+      table_token: tableToken,
+      items: items.map((i: CartItem) => ({
+        menu_item_id: i.id,
+        quantity: i.quantity
+      }))
+    }
+
+    const res = await fetch(`${API_BASE_URL}/create-order/${tableToken}/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify(payload)
+    })
+
+    const data = await res.json()
+    console.log("Réponse du backend:", data)
+    
+    if (res.ok) {
+      setMessage({ type: 'success', text: `Commande #${data.order_number} confirmée !` })
+      
+      // Sauvegarde correcte dans localStorage
+      const orderPayload = {
+        order_id: data.order_id,
+        order_token: data.order_token,
+        order_number: data.order_number,
+        total: data.total,
+        table_token: tableToken,
+        created_at: Date.now(),
+        expires_at: Date.now() + 12 * 60 * 60 * 1000
+      }
+      
+      // Utiliser la fonction utilitaire
+      const existing = localStorage.getItem("orders")
+      let orders = []
+      
+      try {
+        if (existing) {
+          // Essayer de parser
+          const parsed = JSON.parse(existing)
+          // Vérifier si c'est un tableau
+          orders = Array.isArray(parsed) ? parsed : []
+        }
+      } catch (e) {
+        console.warn("Corruption des données localStorage, réinitialisation...")
+        orders = []
+      }
+      
+      orders.push(orderPayload)
+      localStorage.setItem("orders", JSON.stringify(orders))
+      
+      setShowSuccessAnimation(true)
+      
+      setTimeout(() => {
+        clearCart()
+        setShowCheckoutModal(false)
+        setIsCartOpen(false)
+        setCustomerInfo({ name: '', phone: '', email: '', note: '' })
+        setMessage(null)
+      }, 2500)
+    } else {
+      setMessage({ type: 'error', text: data.error || data.detail || "Erreur lors de l'envoi." })
+    }
+  } catch (err) {
+    console.error("Erreur réseau:", err)
+    setMessage({ type: 'error', text: "Erreur réseau." })
+  } finally {
+    setLoading(false)
+  }
+}
   if (items.length === 0 && !isCartOpen) return null
 
   return (
@@ -234,6 +370,13 @@ export default function CartPanel({ orderType: initialOrderType, tableToken }: C
                           alt={item.name}
                           className="w-full h-full object-cover"
                         />
+                        {/* <Image
+                          src={item.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=200&q=80"}
+                          alt={item.name}
+                          width={200}   // obligatoire : largeur
+                          height={200}  // obligatoire : hauteur
+                          className="w-full h-full object-cover"
+                        /> */}
                       </div>
                       
                       {/* Infos produit */}

@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { CartProvider } from '@/lib/cart-context';
-import dynamic from 'next/dynamic';
-import Cart from '@/components/CartPanel'
+
 // const Cart = dynamic(() => import('@/components/Cart'), { ssr: false });
 
 const inter = Inter({ subsets: ['latin'] });

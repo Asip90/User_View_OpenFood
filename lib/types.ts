@@ -5,6 +5,8 @@
 //   logo?: string | null; // Ajout du logo si nécessaire
 // }
 
+import { UUID } from "crypto";
+
 // export interface Table {
 //   id: string;
 //   token: string;
@@ -116,3 +118,23 @@ export interface Table {
     token: string;
     number: number;
   }
+export interface Orders{
+  order: Order[]
+}
+export interface Order {
+  id: number;
+  order_id: number;
+  status: string;
+  total: string;
+  order_token?:string;
+  order_number?:string;
+  created_at: string;
+  customer_name?: string;
+  customer_phone?: string;
+  items?: Array<{
+    id: number;
+    product_name: string;
+    quantity: number;
+    price: string;
+  }>;
+}
